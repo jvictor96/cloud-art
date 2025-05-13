@@ -2,6 +2,16 @@
 
 source ${HOME}/.cloud/cloudrc      # Defines padding, spacing, shuffles, etc
 
+if [[ "$ALIGN" == "LEFT" ]]; then
+	cloud_left
+	exit 0
+fi
+
+if [[ "$ALIGN" == "CORNERS" ]]; then
+	cloud_corners
+	exit 0
+fi
+
 function place_images() {
 	while IFS= read -r art; do
 		dim=($(echo $art))
@@ -60,10 +70,10 @@ function manipulate_buffer() {
 					line="$(echo -e $line | expand)"
 					art_line="${art[$((cursor - posy))]}"
 					dif=$(($COLUMNS - ${#line} - PADDING - sizex + ${#art_line}))
-					if [[ -e /bin/zsh ]]; then
-						/bin/zsh -c 'printf "%s %'"$((dif - fuzz))"'s\n" "$1" "$2"' _ "$line" "${art[$((cursor - posy))]}" >> /tmp/final-buffer.txt
+					if command -v zsh 2&>1 > /dev/null; then
+						zsh -c 'printf "%s %'"$((dif - fuzz))"'s\n" "$1" "$2"' _ "$line" "${art[$((cursor - posy))]}" >> /tmp/final-buffer.txt
 					else
-						printf "%s % ${dif}s\n" "$line" "${art[$((cursor - posy))]}" >> /tmp/final-buffer.txt
+						bash -c 'printf "%s %'"$((dif - fuzz))"'s\n" "$1" "$2"' _ "$line" "${art[$((cursor - posy))]}" >> /tmp/final-buffer.txt
 					fi
 				else
 					printf "%s\n" "$line" >> /tmp/final-buffer.txt

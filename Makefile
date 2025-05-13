@@ -10,6 +10,10 @@ install:
 	sudo ln -sf $(CLOUDDIR)/cloud $(BINDIR)/cloud
 	sudo ln -sf $(CLOUDDIR)/cloudcfg $(BINDIR)/cloudcfg
 
+update:
+	install -m 755 cloud.sh $(CLOUDDIR)/cloud
+	install -m 755 cloudcfg.sh $(CLOUDDIR)/cloudcfg
+
 uninstall:
 	sudo rm -f $(BINDIR)/cloud
 	sudo rm -f $(BINDIR)/cloudcfg

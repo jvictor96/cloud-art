@@ -1,5 +1,15 @@
 #!/bin/bash
 
+source ${HOME}/.cloud/cloudrc
+
+if [[ "$ALIGN" = "LEFT" ]]; then
+ART_FOLDER=${HOME}/.cloud/left_art
+DIMENSION_FILE=${HOME}/.cloud/left_dimensions
+else
+ART_FOLDER=${HOME}/.cloud/art
+DIMENSION_FILE=${HOME}/.cloud/dimensions
+fi
+
 function set_command() {
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
@@ -49,17 +59,17 @@ function get_dim_data() {
             sizex=${#line}
         fi
 	done < $1
-	echo "$sizex $(wc -l $1 | cut -d" " --field 1) $1" >> "${HOME}/.cloud/dimensions"
+	echo "$sizex $(wc -l $1 | cut -d" " --field 1) $1" >> "${DIMENSION_FILE}"
 }
 
 function process() {
     export -f get_dim_data
-    rm "${HOME}/.cloud/dimensions"
-    find ${HOME}/.cloud/art -type f -exec bash -c 'get_dim_data $0' {} \;
+    rm "${DIMENSION_FILE}"
+    find ${ART_FOLDER} -type f -exec bash -c 'get_dim_data $0' {} \;
 }
 
 function import() {
-    cp $1 ${HOME}/.cloud/art
+    cp $1 ${ART_FOLDER}
 }
 
 function help() {
@@ -91,16 +101,16 @@ if [[ "$1" == "art" ]]; then
         exit 0
     fi
     if [[ "$2" == "remove" ]]; then
-        rm ${HOME}/.cloud/art/$3
+        rm ${ART_FOLDER}/$3
         process
         exit 0
     fi
     if [[ "$2" == "view" ]]; then
-        cat ${HOME}/.cloud/art/$3
+        cat ${ART_FOLDER}/$3
         exit 0
     fi
     if [[ "$2" == "list" ]]; then
-        ls ${HOME}/.cloud/art
+        ls ${ART_FOLDER}
         process
         exit 0
     fi
