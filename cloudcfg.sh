@@ -3,11 +3,11 @@
 source ${HOME}/.cloud/cloudrc
 
 if [[ "$ALIGN" = "LEFT" ]]; then
-ART_FOLDER=${HOME}/.cloud/left_art
-DIMENSION_FILE=${HOME}/.cloud/left_dimensions
+export ART_FOLDER="${HOME}/.cloud/left_art"
+export DIMENSION_FILE="${HOME}/.cloud/left_dimensions"
 else
-ART_FOLDER=${HOME}/.cloud/art
-DIMENSION_FILE=${HOME}/.cloud/dimensions
+export ART_FOLDER="${HOME}/.cloud/art"
+export DIMENSION_FILE="${HOME}/.cloud/dimensions"
 fi
 
 function set_command() {
@@ -64,7 +64,7 @@ function get_dim_data() {
 
 function process() {
     export -f get_dim_data
-    rm "${DIMENSION_FILE}"
+    rm -f "${DIMENSION_FILE}"
     find ${ART_FOLDER} -type f -exec bash -c 'get_dim_data $0' {} \;
 }
 

@@ -4,13 +4,15 @@ source ${HOME}/.cloud/cloudrc      # Defines padding, spacing, shuffles, etc
 
 function place_images() {
 	while IFS= read -r art; do
-		dim=($(echo $art))
-		sizex=${dim[0]}
-		sizey=${dim[1]}
-		filename=${dim[2]}
-		pos=$(( lastprint + SPACING))
-		lastprint=$(( lastprint + sizey + SPACING))
-		echo "$status $pos $sizex $sizey $filename" >> /tmp/map 
+		if (( lastprint + SPACING < dim_buffer)); then
+			dim=($(echo $art))
+			sizex=${dim[0]}
+			sizey=${dim[1]}
+			filename=${dim[2]}
+			pos=$(( lastprint + SPACING))
+			lastprint=$(( pos + sizey))
+			echo "$pos $sizex $sizey $filename" >> /tmp/map
+		fi
 	done < ${HOME}/.cloud/left_dimensions
 }
 
@@ -19,19 +21,24 @@ function manipulate_buffer() {
 	cursor=0
 	while IFS= read -r entry; do
 		entry=($(echo $entry))
-		posy=${entry[1]}
-		sizex=${entry[2]}
-		sizey=${entry[3]}
-		filename=${entry[4]}
+		posy=${entry[0]}
+		sizex=${entry[1]}
+		sizey=${entry[2]}
+		filename=${entry[3]}
 		mapfile -t art < $filename
 		while (( cursor < posy )); do
-			printf "%s\n" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
+			dif=$((sizex + ${#buffer[$cursor]}))
+			if command -v zsh 2>&1 > /dev/null; then
+				zsh -c 'printf " %'"$((dif))"'s\n" "$1"' _ "${buffer[$cursor]}" >> /tmp/final-buffer.txt
+			else
+				bash -c 'printf " %'"$((dif))"'s\n" "$1"' _ "${buffer[$cursor]}" >> /tmp/final-buffer.txt
+			fi
 			cursor=$(( cursor + 1 ))
 		done
-		while (( cursor < posy + size )); do
-			if command -v zsh 2&>1 > /dev/null; then
-				art_line="${art[$((cursor - posy))]}"
-				dif=$((sizex - ${#art_line}))
+		while (( cursor < posy + sizey )); do
+			art_line="${art[$((cursor - posy))]}"
+			dif=$((sizex - ${#art_line} + ${#buffer[$cursor]}))
+			if command -v zsh 2>&1 > /dev/null; then
 				zsh -c 'printf "%s %'"$((dif))"'s\n" "$1" "$2"' _ "${art[$((cursor - posy))]}" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
 			else
 				bash -c 'printf "%s %'"$((dif))"'s\n" "$1" "$2"' _ "${art[$((cursor - posy))]}" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
@@ -52,6 +59,7 @@ done < ${HOME}/.cloud/left_dimensions
 
 $(cat /tmp/cmd.sh) > /tmp/buffer.txt
 
+dim_buffer=$(wc -l /tmp/buffer.txt | cut -d" " --field 1)
 buffer_sizex=0
 while IFS= read -r line; do
 	line="$(echo -e $line | expand)"
@@ -66,8 +74,6 @@ if (( buffer_sizex + art_sizex > COLUMNS )); then
 	rm -f /tmp/map /tmp/final-buffer.txt /tmp/buffer.txt /tmp/shuffle
 	exit 0
 fi
-
-dim_buffer=$(wc -l /tmp/buffer.txt | cut -d" " --field 1)
 
 if (( $dim_buffer > $MAX_LINES )); then
 	cat /tmp/buffer.txt

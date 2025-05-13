@@ -70,7 +70,7 @@ function manipulate_buffer() {
 					line="$(echo -e $line | expand)"
 					art_line="${art[$((cursor - posy))]}"
 					dif=$(($COLUMNS - ${#line} - PADDING - sizex + ${#art_line}))
-					if command -v zsh 2&>1 > /dev/null; then
+					if command -v zsh 2>&1 > /dev/null; then
 						zsh -c 'printf "%s %'"$((dif - fuzz))"'s\n" "$1" "$2"' _ "$line" "${art[$((cursor - posy))]}" >> /tmp/final-buffer.txt
 					else
 						bash -c 'printf "%s %'"$((dif - fuzz))"'s\n" "$1" "$2"' _ "$line" "${art[$((cursor - posy))]}" >> /tmp/final-buffer.txt
