@@ -27,7 +27,7 @@ function manipulate_buffer() {
 		filename=${entry[3]}
 		mapfile -t art < $filename
 		while (( cursor < posy )); do
-			dif=$((sizex + ${#buffer[$cursor]}))
+			dif=$((art_sizex + ${#buffer[$cursor]}))
 			if command -v zsh 2>&1 > /dev/null; then
 				zsh -c 'printf " %'"$((dif))"'s\n" "$1"' _ "${buffer[$cursor]}" >> /tmp/final-buffer.txt
 			else
@@ -37,7 +37,7 @@ function manipulate_buffer() {
 		done
 		while (( cursor < posy + sizey )); do
 			art_line="${art[$((cursor - posy))]}"
-			dif=$((sizex - ${#art_line} + ${#buffer[$cursor]}))
+			dif=$((art_sizex - ${#art_line} + ${#buffer[$cursor]}))
 			if command -v zsh 2>&1 > /dev/null; then
 				zsh -c 'printf "%s %'"$((dif))"'s\n" "$1" "$2"' _ "${art[$((cursor - posy))]}" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
 			else
