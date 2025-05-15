@@ -85,7 +85,7 @@ Commands:
         add             [COMMAND]
         remove          [COMMAND]
         list
-    config:             Manage configs. eg "SHUFFLES" "REPETITION_RANGE" "ALIGN" "PADDING" "SPACING" "MAX_LINES" "MODE"
+    config:             Manage configs. eg "SHUFFLES" "REPETITION_RANGE" "ALIGN" "PADDING" "SPACING" "MAX_LINES" "MODE" "SKIP"
         set             [KEY]=[VALUE]
         show
     help:               Print this message

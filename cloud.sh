@@ -2,14 +2,25 @@
 
 source ${HOME}/.cloud/cloudrc      # Defines padding, spacing, shuffles, etc
 
+function quit() {
+	$(cat /tmp/cmd.sh)
+	exit $?
+}
+
+if [[ "$SKIP" == "true" ]]; then
+	quit
+fi
+
 if [[ "$ALIGN" == "LEFT" ]]; then
+	if [[ "$(ls ~/.cloud/left_art/)" ]]; then
+		quit
+	fi
 	cloud_left
 	exit 0
 fi
 
-if [[ "$ALIGN" == "CORNERS" ]]; then
-	cloud_corners
-	exit 0
+if [[ "$(ls ~/.cloud/art)" ]]; then
+	quit
 fi
 
 function place_images() {
