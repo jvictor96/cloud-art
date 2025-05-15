@@ -12,14 +12,14 @@ if [[ "$SKIP" == "true" ]]; then
 fi
 
 if [[ "$ALIGN" == "LEFT" ]]; then
-	if [[ "$(ls ~/.cloud/left_art/)" ]]; then
+	if [[ -z "$(ls ~/.cloud/left_art/)" ]]; then
 		quit
 	fi
 	cloud_left
 	exit 0
 fi
 
-if [[ "$(ls ~/.cloud/art)" ]]; then
+if [[ -z "$(ls ~/.cloud/art)" ]]; then
 	quit
 fi
 
