@@ -5,6 +5,10 @@ It surprises you with ASCII art that blends into the output of common shell comm
 
 ![](banner.gif)
 
+# TLDR
+
+run ./install.sh
+
 ## ✨ What it does
 
 Cloud watches your command output and, when the space is right, lets a cloud (or another piece of ASCII art) softly drift in — aligned, subtle, and non-intrusive.
@@ -26,15 +30,15 @@ Commands:
         remove          [FILENAME]
         show            [FILENAME]
         list
-    command:            Manage commands wapped by cloud. eg. cat, ls, find
+    command:            Manage commands wapped by cloud. eg cat, ls, find
         add             [COMMAND]
         remove          [COMMAND]
         list
+    config:             Manage configs. eg "SHUFFLES" "REPETITION_RANGE" "ALIGN" "PADDING" "SPACING" "MAX_LINES" "SKIP"
+        set             [KEY]=[VALUE]
+        show
+        help
     help:               Print this message
-    config:             Manage configs.
-        To be implemented
-    profile:            Manage sets of arts, configs and commands
-        To be implemented
 ```
 
 ## 🛠 How it works

@@ -45,7 +45,7 @@ fi
 function set_config() {
     source ${HOME}/.cloud/cloudrc
     export "$1"
-    configs=("SHUFFLES" "REPETITION_RANGE" "ALIGN" "PADDING" "SPACING" "MAX_LINES" "MODE")
+    configs=("SHUFFLES" "REPETITION_RANGE" "ALIGN" "PADDING" "SPACING" "MAX_LINES")
     for key in "${configs[@]}"; do
         echo "$key=${!key}" >> /tmp/cloudrc
     done
@@ -85,12 +85,11 @@ Commands:
         add             [COMMAND]
         remove          [COMMAND]
         list
-    config:             Manage configs. eg "SHUFFLES" "REPETITION_RANGE" "ALIGN" "PADDING" "SPACING" "MAX_LINES" "MODE" "SKIP"
+    config:             Manage configs. eg "SHUFFLES" "REPETITION_RANGE" "ALIGN" "PADDING" "SPACING" "MAX_LINES" "SKIP"
         set             [KEY]=[VALUE]
         show
+        help
     help:               Print this message
-    profile:            Manage sets of arts, configs and commands
-        To be implemented
 EOF
 }
 
@@ -119,6 +118,7 @@ fi
 if [[ "$1" == "command" ]]; then
     if [[ "$2" == "add" ]]; then
         set_command "$3"
+        echo "restart the shell to activate it"
         exit 0
     fi
     if [[ "$2" == "remove" ]]; then
@@ -138,6 +138,15 @@ if [[ "$1" == "config" ]]; then
     fi
     if [[ "$2" == "show" ]]; then
         cat ${HOME}/.cloud/cloudrc
+        exit 0
+    fi
+    if [[ "$2" == "help" ]]; then
+        echo "SHUFLES control how many times the arts will be shuffled. Low values can result in poor shuffling and high values in poor performance"
+        echo "PADDING defines a horizontal padding"
+        echo "SPACING defines a minimun space between arts"
+        echo "ALIGN accepts one of RIGHT, LEFT or RANDOM"
+        echo "MAX_LINES tells the algorithm to not run when the output is too long"
+        echo "SKIP turns the algorithm on and off"
         exit 0
     fi
 fi
