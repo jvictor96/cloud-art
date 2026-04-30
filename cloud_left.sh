@@ -1,6 +1,6 @@
 #!/bin/bash
 
-source ${HOME}/.cloud/cloudrc      # Defines padding, spacing, shuffles, etc
+source ${HOME}/.cloud/cloudrc      # Defines padding, spacing, etc
 
 function place_images() {
 	while IFS= read -r art; do
@@ -84,13 +84,6 @@ fi
 lastprint=0
 printing=true
 while [[ "$printing" == "true" ]]; do
-	for j in $(seq $SHUFFLES); do
-		h=$(((RANDOM % art_amount) + 1))
-		t=$((art_amount - h))
-		tail -n $t ${HOME}/.cloud/left_dimensions > /tmp/shuffle
-		head -n $h ${HOME}/.cloud/left_dimensions >> /tmp/shuffle
-		mv /tmp/shuffle ${HOME}/.cloud/left_dimensions
-	done
 	last_lastprint=$lastprint
 	place_images $(( REPETITION_RANGE * ( i - 1 ) ))
 	if [[ "$last_lastprint" == "$lastprint" ]]; then

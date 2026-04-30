@@ -34,7 +34,7 @@ Commands:
         add             [COMMAND]
         remove          [COMMAND]
         list
-    config:             Manage configs. eg "SHUFFLES" "REPETITION_RANGE" "ALIGN" "PADDING" "SPACING" "MAX_LINES" "SKIP"
+    config:             Manage configs. eg "REPETITION_RANGE" "ALIGN" "PADDING" "SPACING" "MAX_LINES" "SKIP"
         set             [KEY]=[VALUE]
         show
         help
