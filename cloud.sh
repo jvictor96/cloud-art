@@ -22,7 +22,7 @@ function place_images() { # place images generates a map of places that images c
 		height=0
 		pos=0
 		cursor=0
-		starting_point=$1
+		starting_point=$lastprint
 		sizex=${dim[0]}
 		sizey=${dim[1]}
 		filename=${dim[2]}
@@ -105,10 +105,10 @@ fi
 
 lastprint=0
 modified=0
-place_images $lastprint
+place_images
 while (( $modified == 1 )); do # place_images manipulates lastprint and modified, while it tries fitting all the images
 	modified=0
-	place_images $lastprint
+	place_images
 done
 
 if [[ -e "/tmp/map" ]]; then
