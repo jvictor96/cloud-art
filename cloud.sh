@@ -11,14 +11,6 @@ if [[ "$SKIP" == "true" ]]; then
 	quit
 fi
 
-if [[ "$ALIGN" == "LEFT" ]]; then
-	if [[ -z "$(ls ~/.cloud/left_art/)" ]]; then
-		quit
-	fi
-	cloud_left
-	exit 0
-fi
-
 if [[ -z "$(ls ~/.cloud/art)" ]]; then
 	quit
 fi
@@ -70,11 +62,9 @@ function manipulate_buffer() {
 		if [[ "${status[0]}" == "T" ]]; then
 			mapfile -t art < $filename
 			cursor=0
-			if [[ "$ALIGN" == "RANDOM" ]]; then
-				fuzz=$((3*(RANDOM % min_dif)))
-				if (( "$fuzz" > "$min_dif" )); then
-					fuzz=$((RANDOM % min_dif))
-				fi
+			fuzz=$((3*(RANDOM % min_dif)))
+			if (( "$fuzz" > "$min_dif" )); then
+				fuzz=$((RANDOM % min_dif))
 			fi
 			cursor=0
 			while IFS= read -r line; do
@@ -97,9 +87,13 @@ function manipulate_buffer() {
 	done < /tmp/map
 }
 
+cloud_left
+
+[ -e /tmp/final-buffer.txt ] && mv /tmp/final-buffer.txt /tmp/buffer.txt
+
 art_amount=$(wc -l ${HOME}/.cloud/dimensions | cut -d" " --field 1)
 
-$(cat /tmp/cmd.sh) > /tmp/buffer.txt
+[ ! -e /tmp/buffer.txt ] && $(cat /tmp/cmd.sh) > /tmp/buffer.txt
 
 dim_buffer=$(wc -l /tmp/buffer.txt | cut -d" " --field 1)
 

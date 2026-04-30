@@ -2,6 +2,10 @@
 
 source ${HOME}/.cloud/cloudrc      # Defines padding, spacing, etc
 
+if [[ -z "$(ls ~/.cloud/left_art)" ]]; then
+	quit
+fi
+
 function place_images() {
 	while IFS= read -r art; do
 		if (( lastprint + SPACING < dim_buffer)); then
@@ -71,13 +75,13 @@ done < ${HOME}/.cloud/left_dimensions
 
 if (( buffer_sizex + art_sizex > COLUMNS )); then
 	cat /tmp/buffer.txt
-	rm -f /tmp/map /tmp/final-buffer.txt /tmp/buffer.txt /tmp/shuffle
+	rm -f /tmp/map /tmp/final-buffer.txt /tmp/buffer.txt
 	exit 0
 fi
 
 if (( $dim_buffer > $MAX_LINES )); then
 	cat /tmp/buffer.txt
-	rm -f /tmp/map /tmp/final-buffer.txt /tmp/buffer.txt /tmp/shuffle
+	rm -f /tmp/map /tmp/final-buffer.txt /tmp/buffer.txt
 	exit 0
 fi
 
@@ -96,4 +100,4 @@ if [[ -e "/tmp/map" ]]; then
 fi
 
 [ -e /tmp/final-buffer.txt ] && cat /tmp/final-buffer.txt || cat /tmp/buffer.txt
-rm -f /tmp/map /tmp/final-buffer.txt /tmp/buffer.txt /tmp/shuffle
+rm -f /tmp/map

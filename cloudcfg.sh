@@ -2,14 +2,6 @@
 
 source ${HOME}/.cloud/cloudrc
 
-if [[ "$ALIGN" = "LEFT" ]]; then
-export ART_FOLDER="${HOME}/.cloud/left_art"
-export DIMENSION_FILE="${HOME}/.cloud/left_dimensions"
-else
-export ART_FOLDER="${HOME}/.cloud/art"
-export DIMENSION_FILE="${HOME}/.cloud/dimensions"
-fi
-
 function set_command() {
 SCRIPT_DIR="$(dirname "$(readlink -f "$0")")"
 
@@ -45,7 +37,7 @@ fi
 function set_config() {
     source ${HOME}/.cloud/cloudrc
     export "$1"
-    configs=("ALIGN" "PADDING" "SPACING" "MAX_LINES")
+    configs=("PADDING" "SPACING" "MAX_LINES")
     for key in "${configs[@]}"; do
         echo "$key=${!key}" >> /tmp/cloudrc
     done
@@ -77,6 +69,7 @@ cat << EOF
 Usage: cloudcfg [COMMAND] [SUBCOMMAND] [ARGUMENTS]
 Commands:
     art                 Manage ascii art files
+        left
         add             [FILENAME]
         remove          [FILENAME]
         show            [FILENAME]
@@ -85,7 +78,7 @@ Commands:
         add             [COMMAND]
         remove          [COMMAND]
         list
-    config:             Manage configs. eg "ALIGN" "PADDING" "SPACING" "MAX_LINES" "SKIP"
+    config:             Manage configs. eg "PADDING" "SPACING" "MAX_LINES" "SKIP"
         set             [KEY]=[VALUE]
         show
         help
@@ -94,25 +87,30 @@ EOF
 }
 
 if [[ "$1" == "art" ]]; then
-    if [[ "$2" == "add" ]]; then
+    if [[ "$2" = "left" ]]; then
+    export ART_FOLDER="${HOME}/.cloud/left_art"
+    export DIMENSION_FILE="${HOME}/.cloud/left_dimensions"
+    else
+    export ART_FOLDER="${HOME}/.cloud/art"
+    export DIMENSION_FILE="${HOME}/.cloud/dimensions"
+    fi
+    if [[ "$3" == "add" ]]; then
         import "$3"
         process
         exit 0
     fi
-    if [[ "$2" == "remove" ]]; then
+    if [[ "$3" == "remove" ]]; then
         rm ${ART_FOLDER}/$3
         process
         exit 0
     fi
-    if [[ "$2" == "view" ]]; then
+    if [[ "$3" == "view" ]]; then
         cat ${ART_FOLDER}/$3
         exit 0
     fi
-    if [[ "$2" == "list" ]]; then
-        ls ${ART_FOLDER}
-        process
-        exit 0
-    fi
+    ls ${ART_FOLDER}
+    exit 0
+
 fi
 
 if [[ "$1" == "command" ]]; then
@@ -143,7 +141,6 @@ if [[ "$1" == "config" ]]; then
     if [[ "$2" == "help" ]]; then
         echo "PADDING defines a horizontal padding"
         echo "SPACING defines a minimun space between arts"
-        echo "ALIGN accepts one of RIGHT, LEFT or RANDOM"
         echo "MAX_LINES tells the algorithm to not run when the output is too long"
         echo "SKIP turns the algorithm on and off"
         exit 0
