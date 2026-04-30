@@ -85,7 +85,7 @@ lastprint=0
 printing=true
 while [[ "$printing" == "true" ]]; do
 	last_lastprint=$lastprint
-	place_images $(( REPETITION_RANGE * ( i - 1 ) ))
+	place_images
 	if [[ "$last_lastprint" == "$lastprint" ]]; then
 		printing=false
 	fi

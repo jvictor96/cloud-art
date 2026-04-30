@@ -45,7 +45,7 @@ fi
 function set_config() {
     source ${HOME}/.cloud/cloudrc
     export "$1"
-    configs=("REPETITION_RANGE" "ALIGN" "PADDING" "SPACING" "MAX_LINES")
+    configs=("ALIGN" "PADDING" "SPACING" "MAX_LINES")
     for key in "${configs[@]}"; do
         echo "$key=${!key}" >> /tmp/cloudrc
     done
@@ -85,7 +85,7 @@ Commands:
         add             [COMMAND]
         remove          [COMMAND]
         list
-    config:             Manage configs. eg "REPETITION_RANGE" "ALIGN" "PADDING" "SPACING" "MAX_LINES" "SKIP"
+    config:             Manage configs. eg "ALIGN" "PADDING" "SPACING" "MAX_LINES" "SKIP"
         set             [KEY]=[VALUE]
         show
         help
