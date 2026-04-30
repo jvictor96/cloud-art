@@ -94,19 +94,21 @@ if [[ "$1" == "art" ]]; then
     export ART_FOLDER="${HOME}/.cloud/art"
     export DIMENSION_FILE="${HOME}/.cloud/dimensions"
     fi
-    if [[ "$3" == "add" ]]; then
-        import "$3"
-        process
-        exit 0
-    fi
-    if [[ "$3" == "remove" ]]; then
-        rm ${ART_FOLDER}/$3
-        process
-        exit 0
-    fi
-    if [[ "$3" == "view" ]]; then
-        cat ${ART_FOLDER}/$3
-        exit 0
+    if [[ "$3" ]]; then
+        if [[ "$3" == "add" ]]; then
+            import "$4"
+            process
+            exit 0
+        fi
+        if [[ "$3" == "remove" ]]; then
+            rm ${ART_FOLDER}/$4
+            process
+            exit 0
+        fi
+        if [[ "$3" == "view" ]]; then
+            cat ${ART_FOLDER}/$4
+            exit 0
+        fi
     fi
     ls ${ART_FOLDER}
     exit 0
