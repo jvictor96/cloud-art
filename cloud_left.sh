@@ -2,8 +2,8 @@
 
 source ${HOME}/.cloud/cloudrc      # Defines padding, spacing, etc
 
-if [[ -z "$(ls ~/.cloud/left_art)" ]]; then
-	quit
+if [[ ! -e "${HOME}/.cloud/left_dimensions" ]]; then
+	exit 0
 fi
 
 function place_images() {

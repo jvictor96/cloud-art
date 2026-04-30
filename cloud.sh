@@ -3,15 +3,12 @@
 source ${HOME}/.cloud/cloudrc      # Defines padding, spacing, etc
 
 function quit() {
-	$(cat /tmp/cmd.sh)
+	[ -e /tmp/final-buffer.txt ] && cat /tmp/final-buffer.txt || $(cat /tmp/cmd.sh)
+	rm -f /tmp/map /tmp/final-buffer.txt /tmp/buffer.txt /tmp/shuffle
 	exit $?
 }
 
 if [[ "$SKIP" == "true" ]]; then
-	quit
-fi
-
-if [[ -z "$(ls ~/.cloud/art)" ]]; then
 	quit
 fi
 
@@ -88,6 +85,10 @@ function manipulate_buffer() {
 }
 
 cloud_left
+
+if [[ ! -e "${HOME}/.cloud/dimensions" ]]; then
+	quit
+fi
 
 [ -e /tmp/final-buffer.txt ] && mv /tmp/final-buffer.txt /tmp/buffer.txt
 
