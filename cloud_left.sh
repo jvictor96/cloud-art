@@ -1,5 +1,3 @@
-#!/bin/bash
-
 source ${HOME}/.cloud/cloudrc      # Defines padding, spacing, etc
 
 if [[ ! -e "${HOME}/.cloud/left_dimensions" ]]; then
@@ -33,21 +31,16 @@ function manipulate_buffer() {
 		mapfile -t art < $filename
 		while (( cursor < posy )); do
 			dif=$((art_sizex + ${#buffer[$cursor]}))
-			if command -v zsh 2>&1 > /dev/null; then
-				zsh -c 'printf " %'"$((dif))"'s\n" "$1"' _ "${buffer[$cursor]}" >> /tmp/final-buffer.txt
-			else
-				bash -c 'printf " %'"$((dif))"'s\n" "$1"' _ "${buffer[$cursor]}" >> /tmp/final-buffer.txt
-			fi
+			printf " %"$((dif))"s $s\n" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
 			cursor=$(( cursor + 1 ))
 		done
 		while (( cursor < posy + sizey )); do
+			if (( cursor >= buffer_sizey )); then
+				break
+			fi
 			art_line="${art[$((cursor - posy))]}"
 			dif=$((art_sizex - ${#art_line} + ${#buffer[$cursor]}))
-			if command -v zsh 2>&1 > /dev/null; then
-				zsh -c 'printf "%s %'"$((dif))"'s\n" "$1" "$2"' _ "${art[$((cursor - posy))]}" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
-			else
-				bash -c 'printf "%s %'"$((dif))"'s\n" "$1" "$2"' _ "${art[$((cursor - posy))]}" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
-			fi
+			printf "%s %"$((dif))"s $s\n" "${art[$((cursor - posy))]}" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
 			cursor=$(( cursor + 1 ))
 		done
 	done < /tmp/map
