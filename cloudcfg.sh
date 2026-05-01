@@ -37,7 +37,7 @@ fi
 function set_config() {
     source ${HOME}/.cloud/cloudrc
     export "$1"
-    configs=("PADDING" "SPACING" "MAX_LINES")
+    configs=("SPACING" "MAX_LINES")
     for key in "${configs[@]}"; do
         echo "$key=${!key}" >> /tmp/cloudrc
     done
@@ -78,7 +78,7 @@ Commands:
         add             [COMMAND]
         remove          [COMMAND]
         list
-    config:             Manage configs. eg "PADDING" "SPACING" "MAX_LINES" "SKIP"
+    config:             Manage configs. eg "SPACING" "MAX_LINES" "SKIP"
         set             [KEY]=[VALUE]
         show
         help
@@ -141,7 +141,6 @@ if [[ "$1" == "config" ]]; then
         exit 0
     fi
     if [[ "$2" == "help" ]]; then
-        echo "PADDING defines a horizontal padding"
         echo "SPACING defines a minimun space between arts"
         echo "MAX_LINES tells the algorithm to not run when the output is too long"
         echo "SKIP turns the algorithm on and off"

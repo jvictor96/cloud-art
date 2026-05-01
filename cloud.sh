@@ -1,6 +1,4 @@
-#!/bin/bash
-
-source ${HOME}/.cloud/cloudrc      # Defines padding, spacing, etc
+source ${HOME}/.cloud/cloudrc      # Defines spacing, etc
 
 function quit() {
 	[ -e /tmp/final-buffer.txt ] && cat /tmp/final-buffer.txt || $(cat /tmp/cmd.sh)
@@ -19,19 +17,19 @@ function place_images() { # place images generates a map of places that images c
 		height=0
 		pos=0
 		cursor=0
-		starting_point=$lastprint
+		starting_point=$((lastprint + 1 + SPACING))
 		sizex=${dim[0]}
 		sizey=${dim[1]}
 		filename=${dim[2]}
 		first_line=$(head -n 1 /tmp/buffer.txt | expand)
-		min_dif=$(($COLUMNS - ${#first_line} - $PADDING - $sizex))
+		min_dif=0
 		while IFS= read -r line; do # line is read from /tmp/buffer.txt
 			cursor=$(($cursor + 1))
 			line=$(echo -e "$line" | expand)
-			if (( COLUMNS - ${#line} > sizex )) && (( cursor > lastprint )) && (( cursor >= starting_point )); then
+			if (( COLUMNS - ${#line} > sizex )) && (( cursor >= starting_point )); then
 				height=$(($height + 1))
-				if (( $min_dif > ($COLUMNS - ${#line} - 1 - $sizex) )); then
-					min_dif=$(($COLUMNS - ${#line} - 1 - $sizex))
+				if (( $min_dif < ${#line} )); then
+					min_dif=${#line}
 				fi
 				if (( height > sizey )) && [[ "$status" == "F" ]]; then  # if success status goes to true and lastprint is marked
 					status=T
@@ -40,7 +38,7 @@ function place_images() { # place images generates a map of places that images c
 				fi
 			elif [[ "$status" == "F" ]]; then  # apparently status = T locks pos and lastprint
 				pos=$cursor
-				min_dif=$(($COLUMNS - ${#line} - 1 - $sizex))
+				min_dif=${#line}
 				height=0
 			fi
 		done < /tmp/buffer.txt
@@ -59,17 +57,13 @@ function manipulate_buffer() {
 		if [[ "${status[0]}" == "T" ]]; then
 			mapfile -t art < $filename
 			cursor=0
-			fuzz=$((3*(RANDOM % min_dif)))
-			if (( "$fuzz" > "$min_dif" )); then
-				fuzz=$((RANDOM % min_dif))
-			fi
-			cursor=0
+			fuzz=$((RANDOM % (COLUMNS - min_dif - sizex - 1)))
 			while IFS= read -r line; do
 				if (( "$cursor" >= "$posy" )) && (( cursor < $(( posy + sizey)) )); then
-					line="$(echo -e $line | expand)"
 					art_line="${art[$((cursor - posy))]}"
-					dif=$(($COLUMNS - ${#line} - PADDING - sizex + ${#art_line}))
-					printf '"%s %'"$((dif - fuzz))"'s\n" "$1" "$2"' _ "$line" "${art[$((cursor - posy))]}" >> /tmp/final-buffer.txt
+					ghost_bytes=$(( $(echo "$line" | wc -c) - $(echo "$line" | wc -m) ))
+					exp="%-$((min_dif + fuzz + ghost_bytes))s%s\n"
+					printf "$exp" "$line" "$art_line" >> /tmp/final-buffer.txt
 				else
 					printf "%s\n" "$line" >> /tmp/final-buffer.txt
 				fi

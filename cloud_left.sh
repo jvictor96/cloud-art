@@ -1,4 +1,4 @@
-source ${HOME}/.cloud/cloudrc      # Defines padding, spacing, etc
+source ${HOME}/.cloud/cloudrc      # Defines spacing, etc
 
 if [[ ! -e "${HOME}/.cloud/left_dimensions" ]]; then
 	exit 0
@@ -31,7 +31,7 @@ function manipulate_buffer() {
 		mapfile -t art < $filename
 		while (( cursor < posy )); do
 			dif=$((art_sizex + ${#buffer[$cursor]}))
-			printf " %"$((dif))"s $s\n" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
+			printf "%$((dif))s\n" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
 			cursor=$(( cursor + 1 ))
 		done
 		while (( cursor < posy + sizey )); do
@@ -39,8 +39,8 @@ function manipulate_buffer() {
 				break
 			fi
 			art_line="${art[$((cursor - posy))]}"
-			dif=$((art_sizex - ${#art_line} + ${#buffer[$cursor]}))
-			printf "%s %"$((dif))"s $s\n" "${art[$((cursor - posy))]}" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
+			ghost_bytes=$(( $(echo "$art_line" | wc -c) - $(echo "$art_line" | wc -m) ))
+			printf "%-$((art_sizex + ghost_bytes))s %s $s\n" "$art_line" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
 			cursor=$(( cursor + 1 ))
 		done
 	done < /tmp/map
