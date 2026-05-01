@@ -1,3 +1,5 @@
+#!/bin/bash
+
 source ${HOME}/.cloud/cloudrc      # Defines spacing, etc
 
 if [[ ! -e "${HOME}/.cloud/left_dimensions" ]]; then
@@ -20,18 +22,15 @@ function place_images() {
 }
 
 function manipulate_buffer() {
-	mapfile -t buffer < /tmp/buffer.txt
 	cursor=0
 	while IFS= read -r entry; do
 		entry=($(echo $entry))
 		posy=${entry[0]}
-		sizex=${entry[1]}
 		sizey=${entry[2]}
 		filename=${entry[3]}
 		mapfile -t art < $filename
 		while (( cursor < posy )); do
-			dif=$((art_sizex + ${#buffer[$cursor]}))
-			printf "%$((dif))s\n" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
+			printf "%-$((art_sizex + ghost_bytes))s %s $s\n" "" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
 			cursor=$(( cursor + 1 ))
 		done
 		while (( cursor < posy + sizey )); do
@@ -55,28 +54,27 @@ while IFS= read -r line; do
 	fi
 done < ${HOME}/.cloud/left_dimensions
 
-$(cat /tmp/cmd.sh) > /tmp/buffer.txt
+mapfile -t buffer < <($(cat /tmp/cmd.sh))
 
-buffer_sizey=$(wc -l /tmp/buffer.txt | cut -d" " --field 1)
+buffer_sizey=${#buffer[@]}
 buffer_sizex=0
-while IFS= read -r line; do
+for line in "${buffer[@]}"; do
 	line="$(echo -e $line | expand)"
     line_sizex=$(echo $line | wc -m)
 	if (( line_sizex > buffer_sizex )); then
 	buffer_sizex=$line_sizex
 	fi
-done < /tmp/buffer.txt
+done
 
 if (( buffer_sizex + art_sizex > COLUMNS )); then
-	cat /tmp/buffer.txt
-	rm -f /tmp/map /tmp/final-buffer.txt /tmp/buffer.txt
-	exit 0
+	printf "%s\n" "${buffer[@]}"
+	exit 10
 fi
 
+
 if (( $buffer_sizey > $MAX_LINES )); then
-	cat /tmp/buffer.txt
-	rm -f /tmp/map /tmp/final-buffer.txt /tmp/buffer.txt
-	exit 0
+	printf "%s\n" "${buffer[@]}"
+	exit 10
 fi
 
 lastprint=0
@@ -92,3 +90,4 @@ if [[ -e "/tmp/map" ]]; then
 fi
 
 rm -f /tmp/map
+

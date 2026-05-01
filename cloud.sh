@@ -1,8 +1,10 @@
 source ${HOME}/.cloud/cloudrc      # Defines spacing, etc
 
+export COLUMNS=$(tput cols)
+export LINES=$(tput lines)
+
 function quit() {
 	[ -e /tmp/final-buffer.txt ] && cat /tmp/final-buffer.txt || $(cat /tmp/cmd.sh)
-	rm -f /tmp/map /tmp/final-buffer.txt /tmp/buffer.txt /tmp/shuffle
 	exit $?
 }
 
@@ -21,11 +23,11 @@ function place_images() { # place images generates a map of places that images c
 		sizex=${dim[0]}
 		sizey=${dim[1]}
 		filename=${dim[2]}
-		first_line=$(head -n 1 /tmp/buffer.txt | expand)
+		first_line=${buffer[0]}
 		min_dif=0
-		while IFS= read -r line; do # line is read from /tmp/buffer.txt
+		for line in "${buffer[@]}"; do
 			cursor=$(($cursor + 1))
-			line=$(echo -e "$line" | expand)
+			line=$(echo -e "$line")
 			if (( COLUMNS - ${#line} > sizex )) && (( cursor >= starting_point )); then
 				height=$(($height + 1))
 				if (( $min_dif < ${#line} )); then
@@ -41,12 +43,13 @@ function place_images() { # place images generates a map of places that images c
 				min_dif=${#line}
 				height=0
 			fi
-		done < /tmp/buffer.txt
+		done
 		echo "$status $pos $sizex $sizey $min_dif $filename" >> /tmp/map  # will print event if status=F 
 	done < ${HOME}/.cloud/dimensions
 }
 
 function manipulate_buffer() {
+	cursor=0
 	while IFS= read -r status; do  #reads from /tmp/map
 		status=($(echo $status))
 		posy=${status[1]}
@@ -56,42 +59,40 @@ function manipulate_buffer() {
 		filename=${status[5]}
 		if [[ "${status[0]}" == "T" ]]; then
 			mapfile -t art < $filename
-			cursor=0
 			fuzz=$((RANDOM % (COLUMNS - min_dif - sizex - 1)))
-			while IFS= read -r line; do
-				if (( "$cursor" >= "$posy" )) && (( cursor < $(( posy + sizey)) )); then
-					art_line="${art[$((cursor - posy))]}"
-					ghost_bytes=$(( $(echo "$line" | wc -c) - $(echo "$line" | wc -m) ))
-					exp="%-$((min_dif + fuzz + ghost_bytes))s%s\n"
-					printf "$exp" "$line" "$art_line" >> /tmp/final-buffer.txt
-				else
-					printf "%s\n" "$line" >> /tmp/final-buffer.txt
-				fi
+			while (( cursor < posy )); do
+				printf "%s\n" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
 				cursor=$(($cursor + 1))
-			done < /tmp/buffer.txt
-			mv /tmp/final-buffer.txt /tmp/buffer.txt 
+			done
+			while (( cursor < ( posy + sizey ) )); do
+				art_line="${art[$((cursor - posy))]}"
+				ghost_bytes=$(( $(echo "${buffer[$cursor]}" | wc -c) - $(echo "${buffer[$cursor]}" | wc -m) ))
+				exp="%-$((min_dif + fuzz + ghost_bytes))s%s\n"
+				printf "$exp" "${buffer[$cursor]}" "$art_line" >> /tmp/final-buffer.txt
+				cursor=$(($cursor + 1))
+			done
 		fi
 	done < /tmp/map
 }
 
 cloud_left
+if [[ $? -ne 0 ]]; then
+	exit $?
+fi
 
 if [[ ! -e "${HOME}/.cloud/dimensions" ]]; then
 	quit
 fi
 
-[ -e /tmp/final-buffer.txt ] && mv /tmp/final-buffer.txt /tmp/buffer.txt
+[ -e /tmp/final-buffer.txt ] && mapfile -t buffer < <(cat /tmp/final-buffer.txt) || mapfile -t buffer < <($(cat /tmp/cmd.sh))
+rm -f /tmp/final-buffer.txt
 
 art_amount=$(wc -l ${HOME}/.cloud/dimensions | cut -d" " --field 1)
 
-[ ! -e /tmp/buffer.txt ] && $(cat /tmp/cmd.sh) > /tmp/buffer.txt
-
-dim_buffer=$(wc -l /tmp/buffer.txt | cut -d" " --field 1)
-
-if (( $dim_buffer > $MAX_LINES )); then
-	cat /tmp/buffer.txt
-	rm -f /tmp/map /tmp/final-buffer.txt /tmp/buffer.txt /tmp/shuffle
-	exit 0
+buffer_sizey=${#buffer[@]}
+if (( $buffer_sizey > $MAX_LINES )); then
+	printf "%s\n" "${buffer[@]}"
+	exit 10
 fi
 
 lastprint=0
@@ -106,5 +107,5 @@ if [[ -e "/tmp/map" ]]; then
 	manipulate_buffer
 fi
 
-[ -e /tmp/final-buffer.txt ] && cat /tmp/final-buffer.txt || cat /tmp/buffer.txt
-rm -f /tmp/map /tmp/final-buffer.txt /tmp/buffer.txt /tmp/shuffle
+[ -e /tmp/final-buffer.txt ] && cat /tmp/final-buffer.txt || printf "%s\n" "${buffer[@]}"
+rm -f /tmp/map /tmp/final-buffer.txt
