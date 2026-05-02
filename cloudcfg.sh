@@ -90,6 +90,9 @@ if [[ "$1" == "art" ]]; then
     if [[ "$2" = "left" ]]; then
     export ART_FOLDER="${HOME}/.cloud/left_art"
     export DIMENSION_FILE="${HOME}/.cloud/left_dimensions"
+    if [[ "$3" == "add" ]]; then
+         rm ${ART_FOLDER}/*
+    fi
     else
     export ART_FOLDER="${HOME}/.cloud/art"
     export DIMENSION_FILE="${HOME}/.cloud/dimensions"
