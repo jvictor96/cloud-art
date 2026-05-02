@@ -44,7 +44,8 @@ function place_images() { # place images generates a map of places that images c
 				height=0
 			fi
 		done
-		map+=("$status $pos $sizex $sizey $min_dif $filename")  # will print event if status=F
+		fuzz=$((RANDOM % (COLUMNS - min_dif - sizex - 1)))
+		map+=("$status $pos $sizex $sizey $min_dif $filename $fuzz")  # will print event if status=F
 	done
 }
 
@@ -57,21 +58,32 @@ function manipulate_buffer() {
 		sizey=${status[3]}
 		min_dif=${status[4]}
 		filename=${status[5]}
+		fuzz=${status[6]}
 		if [[ "${status[0]}" == "T" ]]; then
 			mapfile -t art < $filename
-			fuzz=$((RANDOM % (COLUMNS - min_dif - sizex - 1)))
 			while (( cursor < posy )); do
 				final_buffer+=("$(printf "%s\n" "${buffer[$cursor]}")")
 				cursor=$(($cursor + 1))
 			done
-			while (( cursor < ( posy + sizey ) )); do
-				art_line="${art[$((cursor - posy))]}"
+			while (( cursor  < ( posy + sizey ) )); do
+				relative_line=$(( cursor - posy ))
+				threshold=$(( sizey - frame ))
+				if ((threshold < 0)); then
+					threshold=0
+				fi
+				(( relative_line >= threshold )) && art_line="${art[$((relative_line - threshold))]}" || art_line=""
+				
 				ghost_bytes=$(( $(echo "${buffer[$cursor]}" | wc -c) - $(echo "${buffer[$cursor]}" | wc -m) ))
 				exp="%-$((min_dif + fuzz + ghost_bytes))s%s\n"
 				final_buffer+=("$(printf "$exp" "${buffer[$cursor]}" "$art_line")")
+				
 				cursor=$(($cursor + 1))
 			done
 		fi
+	done
+	while (( cursor < buffer_sizey )); do
+		final_buffer+=("$(printf "%s\n" "${buffer[$cursor]}")")
+		cursor=$(($cursor + 1))
 	done
 }
 
@@ -84,6 +96,13 @@ if [[ ! -e "${HOME}/.cloud/dimensions" ]]; then
 	quit
 fi
 mapfile -t dimensions < <(cat ${HOME}/.cloud/dimensions)
+
+frame_count=0
+for dim in "${dimensions[@]}"; do
+	if [[ $frame_count -lt $(echo $dim | cut -d ' ' -f 2) ]]; then
+		frame_count=$(echo $dim | cut -d ' ' -f 2)
+	fi
+done
 
 [ -e /tmp/final-buffer.txt ] && mapfile -t buffer < <(cat /tmp/final-buffer.txt) || mapfile -t buffer < <($(cat /tmp/cmd.sh))
 rm -f /tmp/final-buffer.txt
@@ -103,5 +122,11 @@ while (( $modified == 1 )); do # place_images manipulates lastprint and modified
 	place_images
 done
 
-manipulate_buffer
+for frame in $(seq 0 $((frame_count))); do
+	final_buffer=()
+	manipulate_buffer
+	[ ${#final_buffer[@]} -gt 0 ] && printf "%s\n" "${final_buffer[@]}" || printf "%s\n" "${buffer[@]}"
+	sleep 0.2
+	printf "\e[$((buffer_sizey))A"
+done
 [ ${#final_buffer[@]} -gt 0 ] && printf "%s\n" "${final_buffer[@]}" || printf "%s\n" "${buffer[@]}"
