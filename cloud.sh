@@ -61,14 +61,14 @@ function manipulate_buffer() {
 			mapfile -t art < $filename
 			fuzz=$((RANDOM % (COLUMNS - min_dif - sizex - 1)))
 			while (( cursor < posy )); do
-				printf "%s\n" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
+				final_buffer+=("$(printf "%s\n" "${buffer[$cursor]}")")
 				cursor=$(($cursor + 1))
 			done
 			while (( cursor < ( posy + sizey ) )); do
 				art_line="${art[$((cursor - posy))]}"
 				ghost_bytes=$(( $(echo "${buffer[$cursor]}" | wc -c) - $(echo "${buffer[$cursor]}" | wc -m) ))
 				exp="%-$((min_dif + fuzz + ghost_bytes))s%s\n"
-				printf "$exp" "${buffer[$cursor]}" "$art_line" >> /tmp/final-buffer.txt
+				final_buffer+=("$(printf "$exp" "${buffer[$cursor]}" "$art_line")")
 				cursor=$(($cursor + 1))
 			done
 		fi
@@ -103,9 +103,9 @@ while (( $modified == 1 )); do # place_images manipulates lastprint and modified
 	place_images
 done
 
+final_buffer=()
 if [[ -e "/tmp/map" ]]; then
 	manipulate_buffer
 fi
-
-[ -e /tmp/final-buffer.txt ] && cat /tmp/final-buffer.txt || printf "%s\n" "${buffer[@]}"
+[ ${#final_buffer[@]} -gt 0 ] && printf "%s\n" "${final_buffer[@]}" || printf "%s\n" "${buffer[@]}"
 rm -f /tmp/map /tmp/final-buffer.txt
