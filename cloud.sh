@@ -13,7 +13,7 @@ if [[ "$SKIP" == "true" ]]; then
 fi
 
 function place_images() { # place images generates a map of places that images can be places. (/tmp/map)
-	while IFS= read -r art; do #art receives dimensions line by line. dimensions contains dimentions and filename
+	for art in "${dimensions[@]}"; do
 		dim=($(echo $art))
 		status=F  # each loop prints the cordinates of image placing only once
 		height=0
@@ -44,13 +44,13 @@ function place_images() { # place images generates a map of places that images c
 				height=0
 			fi
 		done
-		echo "$status $pos $sizex $sizey $min_dif $filename" >> /tmp/map  # will print event if status=F 
-	done < ${HOME}/.cloud/dimensions
+		map+=("$status $pos $sizex $sizey $min_dif $filename")  # will print event if status=F
+	done
 }
 
 function manipulate_buffer() {
 	cursor=0
-	while IFS= read -r status; do  #reads from /tmp/map
+	for status in "${map[@]}"; do
 		status=($(echo $status))
 		posy=${status[1]}
 		sizex=${status[2]}
@@ -72,7 +72,7 @@ function manipulate_buffer() {
 				cursor=$(($cursor + 1))
 			done
 		fi
-	done < /tmp/map
+	done
 }
 
 cloud_left
@@ -83,11 +83,10 @@ fi
 if [[ ! -e "${HOME}/.cloud/dimensions" ]]; then
 	quit
 fi
+mapfile -t dimensions < <(cat ${HOME}/.cloud/dimensions)
 
 [ -e /tmp/final-buffer.txt ] && mapfile -t buffer < <(cat /tmp/final-buffer.txt) || mapfile -t buffer < <($(cat /tmp/cmd.sh))
 rm -f /tmp/final-buffer.txt
-
-art_amount=$(wc -l ${HOME}/.cloud/dimensions | cut -d" " --field 1)
 
 buffer_sizey=${#buffer[@]}
 if (( $buffer_sizey > $MAX_LINES )); then
@@ -97,15 +96,12 @@ fi
 
 lastprint=0
 modified=0
+map=()
 place_images
 while (( $modified == 1 )); do # place_images manipulates lastprint and modified, while it tries fitting all the images
 	modified=0
 	place_images
 done
 
-final_buffer=()
-if [[ -e "/tmp/map" ]]; then
-	manipulate_buffer
-fi
+manipulate_buffer
 [ ${#final_buffer[@]} -gt 0 ] && printf "%s\n" "${final_buffer[@]}" || printf "%s\n" "${buffer[@]}"
-rm -f /tmp/map /tmp/final-buffer.txt
