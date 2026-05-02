@@ -7,18 +7,17 @@ if [[ ! -e "${HOME}/.cloud/left_dimensions" ]]; then
 fi
 
 function place_images() {
-	while IFS= read -r art; do
-		if (( lastprint + SPACING < buffer_sizey)); then
-			dim=($(echo $art))
-			sizex=${dim[0]}
-			sizey=${dim[1]}
-			filename=${dim[2]}
-			pos=$(( lastprint + SPACING))
-			lastprint=$(( pos + sizey))
-			modified=1
-			echo "$pos $sizex $sizey $filename" >> /tmp/map
-		fi
-	done < ${HOME}/.cloud/left_dimensions
+	arte=$(cat ${HOME}/.cloud/left_dimensions | head -n 1)
+	if (( lastprint + SPACING < buffer_sizey)); then
+		dim=($(echo $arte))
+		sizex=${dim[0]}
+		sizey=${dim[1]}
+		filename=${dim[2]}
+		pos=$(( lastprint + SPACING))
+		lastprint=$(( pos + sizey))
+		modified=1
+		echo "$pos $sizex $sizey $filename" >> /tmp/map
+	fi
 }
 
 function manipulate_buffer() {
@@ -28,7 +27,7 @@ function manipulate_buffer() {
 		posy=${entry[0]}
 		sizey=${entry[2]}
 		filename=${entry[3]}
-		mapfile -t art < $filename
+		mapfile -t art < <(cat $filename)
 		while (( cursor < posy )); do
 			printf "%-$((art_sizex + ghost_bytes))s %s $s\n" "" "${buffer[$cursor]}" >> /tmp/final-buffer.txt
 			cursor=$(( cursor + 1 ))
@@ -45,14 +44,7 @@ function manipulate_buffer() {
 	done < /tmp/map
 }
 
-art_amount=$(wc -l ${HOME}/.cloud/left_dimensions | cut -d" " --field 1)
-art_sizex=0
-while IFS= read -r line; do
-	dim=($(echo $line))
-	if (( ${dim[0]} > art_sizex )); then
-	art_sizex=${dim[0]}
-	fi
-done < ${HOME}/.cloud/left_dimensions
+art_sizex=$(cat ${HOME}/.cloud/left_dimensions | head -n 1 | cut -d ' ' -f 1)
 
 mapfile -t buffer < <($(cat /tmp/cmd.sh))
 
